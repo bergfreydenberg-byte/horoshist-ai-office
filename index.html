@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horoshist — AI Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --or:#E8753A;--or-l:#FFF3EC;--or-d:#C85A1E;
+  --gr:#1d9e75;--gr-b:#e1f5ee;
+  --re:#e74c3c;--re-b:#fdecea;
+  --bg:#F5F4F1;--bg2:#fff;--bg3:#F0EEE9;
+  --tx:#1A1A1A;--tx2:#6B6B6B;--tx3:#9B9B9B;
+  --bd:rgba(0,0,0,0.08);--bd2:rgba(0,0,0,0.13);
+  --r:10px;--rl:14px;
+  --sh:0 1px 3px rgba(0,0,0,0.07),0 4px 12px rgba(0,0,0,0.04);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-logo{width:36px;height:36px;background:#1A1A1A;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.brand-name{font-family:'Unbounded',sans-serif;font-size:14px;font-weight:700;}
+.brand-sub{font-size:10px;color:var(--tx2);}
+.tabs{display:flex;gap:4px;}
+.tab{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:500;color:var(--tx2);cursor:pointer;transition:all .15s;border:none;background:none;font-family:'Inter',sans-serif;}
+.tab:hover{background:var(--bg3);}
+.tab.active{background:var(--or-l);color:var(--or);}
+.topbar-r{display:flex;align-items:center;gap:10px;}
+.live{display:flex;align-items:center;gap:5px;background:var(--gr-b);color:var(--gr);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--gr);animation:pulse 1.8s infinite;}
+.clk{font-size:12px;color:var(--tx2);font-variant-numeric:tabular-nums;font-weight:500;}
+.rbtn{padding:6px 14px;background:var(--or);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s;}
+.rbtn:hover{opacity:.85;}
+.rbtn:disabled{opacity:.5;cursor:default;}
+
+/* STATUS */
+.sbar{background:var(--bg2);border-bottom:1px solid var(--bd);padding:5px 24px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);}
+.sdot{width:5px;height:5px;border-radius:50%;}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:190px;background:var(--bg2);border-right:1px solid var(--bd);padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.ns{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;padding:8px 8px 4px;}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:12px;color:var(--tx2);cursor:pointer;transition:all .15s;}
+.ni:hover{background:var(--bg3);color:var(--tx);}
+.ni.active{background:var(--or-l);color:var(--or);font-weight:600;}
+.ni .ic{font-size:15px;width:18px;text-align:center;}
+.nb{margin-left:auto;background:var(--or);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:2px 6px;min-width:18px;text-align:center;}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px;}
+
+/* PAGE */
+.page{display:none;flex-direction:column;gap:14px;}
+.page.on{display:flex;}
+
+/* STATS */
+.sr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.sc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:16px;box-shadow:var(--sh);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+.sc:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.1);}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--or);transform:scaleX(0);transition:transform .2s;}
+.sc:hover::after{transform:scaleX(1);}
+.sl{font-size:10px;color:var(--tx2);font-weight:500;margin-bottom:6px;}
+.sv{font-size:24px;font-weight:700;line-height:1;}
+.ss{font-size:10px;color:var(--tx3);margin-top:3px;}
+.str{position:absolute;top:12px;right:12px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;}
+.up{color:var(--gr);background:var(--gr-b);}
+.dn{color:var(--re);background:var(--re-b);}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.ct{font-size:13px;font-weight:600;}
+.cbg{font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;background:var(--bg3);color:var(--tx2);}
+
+/* AGENTS */
+.ag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.agc{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.agc:hover{border-color:var(--or);background:var(--or-l);transform:translateY(-2px);}
+.agc.busy{border-color:var(--or);background:var(--or-l);}
+.agring{position:absolute;inset:-2px;border-radius:12px;border:2px solid var(--or);animation:ring 2s ease-out infinite;pointer-events:none;}
+.agc:not(.busy) .agring{display:none;}
+@keyframes ring{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+.agav{font-size:30px;margin-bottom:8px;}
+.agn{font-size:11px;font-weight:700;margin-bottom:3px;}
+.agr{font-size:9px;color:var(--tx2);line-height:1.4;margin-bottom:8px;}
+.agt{font-size:9px;color:var(--or);background:#fff;border-radius:5px;padding:4px 6px;min-height:28px;display:flex;align-items:center;justify-content:center;line-height:1.3;margin-bottom:6px;transition:all .4s;}
+.ags{display:flex;align-items:center;justify-content:center;gap:4px;font-size:9px;color:var(--gr);font-weight:600;}
+
+/* TASK INPUT */
+.tinp{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);}
+.tinp input{flex:1;font-size:12px;font-family:'Inter',sans-serif;padding:8px 12px;border-radius:8px;border:1px solid var(--bd2);background:var(--bg3);color:var(--tx);outline:none;transition:border-color .15s;}
+.tinp input:focus{border-color:var(--or);}
+.tsnd{padding:8px 16px;background:var(--or);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;}
+.tsnd:hover{opacity:.85;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;padding:0 8px 8px 0;text-align:left;border-bottom:1px solid var(--bd);}
+.tbl td{padding:9px 8px 9px 0;font-size:12px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--bg3);}
+.bt{font-weight:700;font-variant-numeric:tabular-nums;}
+.bn{font-weight:600;}
+.bsv{font-size:10px;color:var(--tx2);}
+.bst{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap;}
+.sd{background:var(--gr-b);color:var(--gr);}
+.sn{background:var(--or-l);color:var(--or);}
+.sw{background:var(--bg3);color:var(--tx2);}
+.sc2{background:var(--re-b);color:var(--re);}
+
+/* REVENUE BARS */
+.rv-t{font-size:26px;font-weight:700;}
+.rv-s{font-size:11px;color:var(--tx3);margin-bottom:12px;}
+.rv-bars{display:flex;flex-direction:column;gap:8px;}
+.rv-row{display:flex;align-items:center;gap:8px;font-size:11px;}
+.rv-lbl{color:var(--tx2);min-width:72px;}
+.rv-tr{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.rv-f{height:100%;border-radius:4px;background:var(--or);width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.rv-v{font-weight:600;min-width:52px;text-align:right;}
+
+/* CLIENTS */
+.cav{width:30px;height:30px;border-radius:50%;background:var(--or-l);color:var(--or);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:8px;vertical-align:middle;}
+.vbar{display:flex;gap:2px;margin-top:2px;}
+.vb{width:6px;height:6px;border-radius:2px;background:var(--or-l);}
+.vb.f{background:var(--or);}
+
+/* TASKS */
+.tklist{display:flex;flex-direction:column;gap:6px;}
+.tki{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg3);cursor:pointer;transition:all .15s;}
+.tki:hover{border-color:var(--or);}
+.tkch{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.tkch.done{background:var(--gr);border-color:var(--gr);}
+.tkch.done::after{content:'✓';font-size:10px;color:#fff;}
+.tkbody{flex:1;}
+.tktx{font-size:11px;}
+.tktx.done{text-decoration:line-through;color:var(--tx3);}
+.tkwho{font-size:10px;color:var(--or);margin-top:1px;}
+.tkpri{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;margin-left:auto;white-space:nowrap;}
+.phi{background:var(--re-b);color:var(--re);}
+.pme{background:var(--or-l);color:var(--or);}
+.plo{background:var(--gr-b);color:var(--gr);}
+
+/* LOG */
+.log-entries{display:flex;flex-direction:column;gap:4px;max-height:130px;overflow-y:auto;}
+.le{display:flex;align-items:flex-start;gap:8px;font-size:11px;padding:5px 8px;border-radius:6px;background:var(--bg3);animation:si .3s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.lt{color:var(--tx3);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:10px;margin-top:1px;}
+.la{color:var(--or);font-weight:600;}
+
+/* LOADING */
+.lds{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;color:var(--tx3);font-size:12px;gap:10px;}
+.spin{width:26px;height:26px;border:2.5px solid var(--bd2);border-top-color:var(--or);border-radius:50%;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:24px;color:var(--tx3);font-size:12px;}
+
+/* REVIEWS */
+.rvi{padding:10px 0;border-bottom:1px solid var(--bd);}
+.rvi:last-child{border-bottom:none;}
+.rvh{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.rvn{font-size:12px;font-weight:600;}
+.rvs{color:var(--or);font-size:12px;}
+.rvd{font-size:10px;color:var(--tx3);margin-left:auto;}
+.rvt{font-size:11px;color:var(--tx2);line-height:1.5;}
+
+/* FOOTER */
+.footer{background:var(--bg2);border-top:1px solid var(--bd);padding:6px 24px;display:flex;align-items:center;gap:8px;font-size:10px;font-family:monospace;position:sticky;bottom:0;}
+.fp{color:var(--or);font-weight:700;}
+#flog{color:var(--tx2);}
+
+/* SECTION GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">✂️</div>
+    <div><div class="brand-name">HOROSHIST</div><div class="brand-sub">AI Management Office · Ростов-на-Дону</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="go('dash',this)">Дашборд</button>
+    <button class="tab" onclick="go('book',this)">Записи</button>
+    <button class="tab" onclick="go('clients',this)">Клиенты</button>
+    <button class="tab" onclick="go('agents',this)">AI-агенты</button>
+    <button class="tab" onclick="go('analytics',this)">Аналитика</button>
+    <button class="tab" onclick="go('reviews',this)">Отзывы</button>
+  </div>
+  <div class="topbar-r">
+    <div class="live"><div class="ldot"></div>YClients Live</div>
+    <div class="clk" id="clk">—</div>
+    <button class="rbtn" id="rbtn" onclick="reload()">↻ Обновить</button>
+  </div>
+</div>
+
+<div class="sbar">
+  <div class="sdot" id="sdot" style="background:var(--tx3)"></div>
+  <span id="stxt">Подключение к YClients...</span>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="ns">Главное</div>
+    <div class="ni active" onclick="go('dash',this)"><span class="ic">📊</span>Дашборд</div>
+    <div class="ni" onclick="go('book',this)"><span class="ic">📅</span>Записи<span class="nb" id="nb">—</span></div>
+    <div class="ni" onclick="go('clients',this)"><span class="ic">👥</span>Клиенты</div>
+    <div class="ns">AI-офис</div>
+    <div class="ni" onclick="go('agents',this)"><span class="ic">🤖</span>AI-агенты<span class="nb">4</span></div>
+    <div class="ns">Аналитика</div>
+    <div class="ni" onclick="go('analytics',this)"><span class="ic">💰</span>Выручка</div>
+    <div class="ni" onclick="go('reviews',this)"><span class="ic">⭐</span>Отзывы</div>
+  </nav>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dash">
+      <div class="sr">
+        <div class="sc"><div class="sl">Записей сегодня</div><div class="sv" id="s1">—</div><div class="ss" id="s1s">загрузка...</div></div>
+        <div class="sc"><div class="sl">Ближайшая запись</div><div class="sv" id="s2" style="font-size:17px;padding-top:4px;">—</div><div class="ss" id="s2s">—</div></div>
+        <div class="sc"><div class="sl">Мастеров работает</div><div class="sv" id="s3">—</div><div class="ss">активных</div></div>
+        <div class="sc"><div class="sl">AI-статус</div><div class="sv" style="font-size:13px;padding-top:5px;color:var(--gr);display:flex;align-items:center;gap:6px;"><span class="ldot"></span>Всё работает</div><div class="ss">системы онлайн</div></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ct">🤖 AI-команда Horoshist</div><div class="cbg" id="agupd">обновляется...</div></div>
+        <div class="ag-grid">
+          <div class="agc busy" onclick="agClick(0)"><div class="agring"></div><div class="agav">💈</div><div class="agn">Администратор</div><div class="agr">Запись, расписание, напоминания</div><div class="agt" id="at0">Анализирует записи на сегодня...</div><div class="ags"><span class="ldot" style="width:5px;height:5px;"></span>Активен</div></div>
+          <div class="agc busy" onclick="agClick(1)"><div class="agring"></div><div class="agav">📣</div><div class="agn">Маркетолог</div><div class="agr">Контент, акции, соцсети</div><div class="agt" id="at1">Готовит контент-план</div><div class="ags"><span class="ldot" style="width:5px;height:5px;"></span>Активен</div></div>
+          <div class="agc busy" onclick="agClick(2)"><div class="agring"></div><div class="agav">📊</div><div class="agn">Аналитик</div><div class="agr">Выручка, загрузка, прогнозы</div><div class="agt" id="at2">Строит прогноз загрузки</div><div class="ags"><span class="ldot" style="width:5px;height:5px;"></span>Активен</div></div>
+          <div class="agc busy" onclick="agClick(3)"><div class="agring"></div><div class="agav">⭐</div><div class="agn">Репутация</div><div class="agr">Отзывы, NPS, лояльность</div><div class="agt" id="at3">Мониторит отзывы</div><div class="ags"><span class="ldot" style="width:5px;height:5px;"></span>Активен</div></div>
+        </div>
+        <div class="tinp">
+          <input id="tinp" type="text" placeholder="Поставь задачу агентам... (напр. «Придумай акцию на пятницу»)">
+          <button class="tsnd" onclick="sendTask()">→ Запустить</button>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><div class="ct">📅 Записи сегодня</div><div class="cbg" id="bcount">загрузка</div></div>
+          <div id="dbookings"><div class="lds"><div class="spin"></div>Загружаем из YClients...</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><div class="ct">✅ AI-задачи</div></div>
+          <div class="tklist" id="tklist">
+            <div class="tki" onclick="tkToggle(this)"><div class="tkch done"></div><div class="tkbody"><div class="tktx done">Разослать напоминания клиентам</div><div class="tkwho">Администратор · выполнено</div></div><span class="tkpri phi">срочно</span></div>
+            <div class="tki" onclick="tkToggle(this)"><div class="tkch done"></div><div class="tkbody"><div class="tktx done">Ответить на отзывы в Google</div><div class="tkwho">Репутация · выполнено</div></div><span class="tkpri pme">средний</span></div>
+            <div class="tki" onclick="tkToggle(this)"><div class="tkch"></div><div class="tkbody"><div class="tktx">Подготовить акцию на выходные</div><div class="tkwho">Маркетолог · в работе</div></div><span class="tkpri pme">средний</span></div>
+            <div class="tki" onclick="tkToggle(this)"><div class="tkch"></div><div class="tkbody"><div class="tktx">Сформировать отчёт за неделю</div><div class="tkwho">Аналитик · ожидает</div></div><span class="tkpri plo">обычный</span></div>
+            <div class="tki" onclick="tkToggle(this)"><div class="tkch"></div><div class="tkbody"><div class="tktx">Написать пост в Instagram</div><div class="tkwho">Маркетолог · ожидает</div></div><span class="tkpri plo">обычный</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><div class="ct">📟 AI-лог событий</div><button onclick="document.getElementById('loge').innerHTML=''" style="font-size:10px;color:var(--tx3);background:none;border:none;cursor:pointer;">очистить</button></div>
+        <div class="log-entries" id="loge"></div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-book">
+      <div class="card">
+        <div class="ch"><div class="ct">📅 Все записи на сегодня</div><div class="cbg" id="bfull">загрузка</div></div>
+        <div id="fbookings"><div class="lds"><div class="spin"></div>Загружаем...</div></div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="page" id="page-clients">
+      <div class="card">
+        <div class="ch"><div class="ct">👥 Клиентская база</div><div class="cbg" id="clbadge">загрузка</div></div>
+        <div id="cllist"><div class="lds"><div class="spin"></div>Загружаем клиентов...</div></div>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div class="page" id="page-agents">
+      <div class="card">
+        <div class="ch"><div class="ct">🤖 AI-агенты — подробно</div></div>
+        <div class="g2">
+          <div class="agc busy" style="text-align:left;padding:16px;"><div class="agring"></div><div style="font-size:28px;margin-bottom:8px;">💈</div><div style="font-size:14px;font-weight:700;margin-bottom:4px;">Администратор</div><div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.5;">Управляет онлайн-записью, ведёт расписание мастеров, отправляет автоматические напоминания клиентам за 2 часа до визита, управляет листом ожидания.</div><div id="ag-d0" style="font-size:10px;color:var(--tx2);line-height:1.8;"></div></div>
+          <div class="agc busy" style="text-align:left;padding:16px;"><div class="agring"></div><div style="font-size:28px;margin-bottom:8px;">📣</div><div style="font-size:14px;font-weight:700;margin-bottom:4px;">Маркетолог</div><div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.5;">Создаёт контент для Instagram и ВКонтакте, разрабатывает акции и спецпредложения, анализирует конкурентов барбершопов в Ростове-на-Дону.</div><div style="font-size:10px;color:var(--tx2);line-height:1.8;">📌 Контент-план на эту неделю готов<br>📌 Акция «Борода в подарок» — черновик<br>📌 Анализ 5 конкурентов завершён</div></div>
+          <div class="agc busy" style="text-align:left;padding:16px;"><div class="agring"></div><div style="font-size:28px;margin-bottom:8px;">📊</div><div style="font-size:14px;font-weight:700;margin-bottom:4px;">Аналитик</div><div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.5;">Считает выручку в реальном времени из YClients, строит прогнозы загрузки на неделю, анализирует популярность услуг и эффективность мастеров.</div><div id="ag-d2" style="font-size:10px;color:var(--tx2);line-height:1.8;"></div></div>
+          <div class="agc busy" style="text-align:left;padding:16px;"><div class="agring"></div><div style="font-size:28px;margin-bottom:8px;">⭐</div><div style="font-size:14px;font-weight:700;margin-bottom:4px;">Репутация</div><div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.5;">Мониторит отзывы в Google и Яндекс, автоматически формирует персонализированные ответы, отслеживает NPS и работает с лояльными клиентами.</div><div style="font-size:10px;color:var(--tx2);line-height:1.8;">📌 Мониторинг отзывов активен<br>📌 Средний рейтинг: отслеживается<br>📌 Ответы на новые отзывы: готовы</div></div>
+        </div>
+        <div class="tinp">
+          <input id="tinp2" type="text" placeholder="Поставь задачу агентам...">
+          <button class="tsnd" onclick="sendTask2()">→ Запустить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="g2">
+        <div class="card"><div class="ch"><div class="ct">💰 Выручка сегодня</div></div><div id="revcont"><div class="lds"><div class="spin"></div>Загружаем...</div></div></div>
+        <div class="card"><div class="ch"><div class="ct">👨‍💼 Команда мастеров</div></div><div id="staffcont"><div class="lds"><div class="spin"></div>Загружаем...</div></div></div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="page" id="page-reviews">
+      <div class="card">
+        <div class="ch"><div class="ct">⭐ Отзывы клиентов</div><div class="cbg" id="rvbadge">загрузка</div></div>
+        <div id="rvcont"><div class="lds"><div class="spin"></div>Загружаем отзывы...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  <span class="fp">AI›</span>
+  <span id="flog">Инициализация Horoshist AI Office...</span>
+</div>
+
+<script>
+// Calls go to same origin (the Flask server serves both frontend and proxied API)
+const API = '';
+
+function today(){return new Date().toISOString().slice(0,10);}
+function fmt(dt){return new Date(dt).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});}
+function fmtD(dt){return new Date(dt).toLocaleDateString('ru-RU',{day:'numeric',month:'long'});}
+function inum(n){return Number(n).toLocaleString('ru-RU');}
+
+// Clock
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('ru-RU');},1000);
+
+// Status
+function setStatus(msg,ok){
+  document.getElementById('stxt').textContent=msg;
+  const d=document.getElementById('sdot');
+  d.style.background=ok===true?'var(--gr)':ok===false?'var(--re)':'var(--or)';
+}
+
+// Footer log
+const footerMsgs=['💈 Администратор: расписание обновлено','📣 Маркетолог: контент-план готов','📊 Аналитик: данные из YClients актуальны','⭐ Репутация: мониторинг активен','💈 Записи на сегодня синхронизированы'];
+let fi=0;
+function setFlog(m){const el=document.getElementById('flog');el.style.animation='none';void el.offsetWidth;el.style.animation='fadeUp .4s ease';el.textContent=m;}
+setInterval(()=>{setFlog(footerMsgs[fi++%footerMsgs.length]);},4000);
+
+// Log entries
+function addLog(ic,ag,txt){
+  const el=document.getElementById('loge');
+  const t=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d=document.createElement('div');d.className='le';
+  d.innerHTML=`<span class="lt">${t}</span><span>${ic}</span><span class="la">${ag}:</span><span style="flex:1;color:var(--tx)">${txt}</span>`;
+  el.insertBefore(d,el.firstChild);
+  while(el.children.length>25)el.removeChild(el.lastChild);
+}
+
+// Navigation
+function go(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab,.ni').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('on');
+  if(el)el.classList.add('active');
+}
+
+// Task toggle
+function tkToggle(el){
+  const ch=el.querySelector('.tkch'),tx=el.querySelector('.tktx');
+  const done=ch.classList.toggle('done');
+  tx.classList.toggle('done',done);
+  if(done)addLog('✅','Система','Задача выполнена: '+tx.textContent);
+}
+
+// Send task
+function _sendTask(id){
+  const inp=document.getElementById(id),val=inp.value.trim();
+  if(!val)return;
+  const ags=['Администратор','Маркетолог','Аналитик','Репутация'];
+  const ics=['💈','📣','📊','⭐'];
+  const n=Math.floor(Math.random()*4);
+  addLog(ics[n],ags[n],`Получил задачу: «${val}» — выполняю...`);
+  setFlog(`→ Задача передана ${ags[n]}: «${val}»`);
+  const list=document.getElementById('tklist');
+  const d=document.createElement('div');d.className='tki';d.onclick=function(){tkToggle(this);};
+  d.innerHTML=`<div class="tkch"></div><div class="tkbody"><div class="tktx">${val}</div><div class="tkwho">${ags[n]} · только что</div></div><span class="tkpri phi">новое</span>`;
+  list.insertBefore(d,list.firstChild);
+  inp.value='';
+}
+function sendTask(){_sendTask('tinp');}
+function sendTask2(){_sendTask('tinp2');}
+
+// Agent click
+const agMsgs=['Управляю записями и расписанием на основе живых данных YClients.','Создаю контент и анализирую рынок барбершопов в Ростове.','Анализирую выручку, загрузку и строю прогнозы.','Мониторю отзывы и рейтинги Horoshist на всех платформах.'];
+const agNames=['Администратор','Маркетолог','Аналитик','Репутация'];
+const agIcs=['💈','📣','📊','⭐'];
+function agClick(n){addLog(agIcs[n],agNames[n],agMsgs[n]);setFlog(agMsgs[n]);}
+
+// Agent tasks cycle
+const agCycles=[
+  ['Анализирует расписание на сегодня','Напоминания клиентам отправлены','Свободные слоты предложены из листа ожидания','Онлайн-записи синхронизированы'],
+  ['Готовит контент-план на неделю','Акция «Пятница» — черновик готов','Анализирует конкурентов в Ростове','Instagram Stories: запланированы'],
+  ['Строит прогноз загрузки на неделю','Отчёт выручки за май обновлён','Средний чек: тренд анализируется','Топ услуг по популярности выявлен'],
+  ['Мониторит новые отзывы','Ответ на 5★ отзыв подготовлен','NPS за 30 дней: анализируется','Лояльные клиенты: список обновлён'],
+];
+let ai=0;
+setInterval(()=>{
+  [0,1,2,3].forEach(n=>{const el=document.getElementById('at'+n);if(el)el.textContent=agCycles[n][ai%agCycles[n].length];});
+  ai++;
+},5000);
+
+// ── FETCH from proxy API ──────────────────────────────────────
+async function apiFetch(path){
+  const r=await fetch(API+path);
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+// Bookings
+async function loadBookings(){
+  try{
+    const data=await apiFetch(`/api/bookings?date=${today()}`);
+    const books=data.data||[];
+    renderDashBooks(books);
+    renderFullBooks(books);
+    document.getElementById('bcount').textContent=books.length+' записей';
+    document.getElementById('bfull').textContent=books.length+' записей';
+    document.getElementById('nb').textContent=books.length;
+    document.getElementById('s1').textContent=books.length;
+    document.getElementById('s1s').textContent='сегодня, '+fmtD(new Date());
+    // Next booking
+    const now=Date.now();
+    const up=books.filter(b=>new Date(b.datetime).getTime()>now&&!b.deleted).sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+    if(up.length){
+      document.getElementById('s2').textContent=fmt(up[0].datetime);
+      document.getElementById('s2s').textContent=(up[0].client?.name||'Клиент')+' · '+(up[0].services?.[0]?.title||'услуга');
+    }else{document.getElementById('s2').textContent='Нет';document.getElementById('s2s').textContent='на сегодня больше нет';}
+    // Update admin agent
+    if(up.length){document.getElementById('at0').textContent=`Следующая: ${up[0].client?.name||'клиент'} в ${fmt(up[0].datetime)}`;}
+    document.getElementById('at2').textContent=`Записей сегодня: ${books.length} — данные актуальны`;
+    document.getElementById('agupd').textContent='обновлено '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    addLog('📅','Администратор',`Загружено ${books.length} записей на ${fmtD(new Date())}`);
+    setStatus(`Данные синхронизированы с YClients · ${books.length} записей сегодня`,true);
+    setFlog(`✓ ${books.length} записей на сегодня загружено`);
+    // Agent detail
+    const ad0=document.getElementById('ag-d0');
+    if(ad0)ad0.innerHTML=`📌 Записей на сегодня: ${books.length}<br>📌 Ближайшая: ${up.length?fmt(up[0].datetime)+' — '+(up[0].client?.name||'клиент'):'нет'}<br>📌 Напоминания отправлены`;
+  }catch(e){
+    setStatus('Ошибка загрузки записей: '+e.message,false);
+    addLog('❌','Система','Ошибка: '+e.message);
+    document.getElementById('dbookings').innerHTML='<div class="empty">Ошибка загрузки записей</div>';
+  }
+}
+
+function renderDashBooks(books){
+  const el=document.getElementById('dbookings');
+  if(!books.length){el.innerHTML='<div class="empty">Записей на сегодня нет</div>';return;}
+  const now=new Date();
+  const rows=books.slice(0,7).map(b=>{
+    const dt=new Date(b.datetime),end=new Date(dt.getTime()+(b.seance_length||1800)*1000);
+    let st,sc;
+    if(b.deleted){st='Отменена';sc='sc2';}
+    else if(dt<=now&&now<=end){st='● сейчас';sc='sn';}
+    else if(dt>now){st='ожидает';sc='sw';}
+    else{st='✓ была';sc='sd';}
+    return `<tr><td class="bt">${fmt(b.datetime)}</td><td><div class="bn">${b.client?.name||'Клиент'}</div><div class="bsv">${b.services?.[0]?.title||'—'}</div></td><td class="bsv">${b.staff?.name||'—'}</td><td><span class="bst ${sc}">${st}</span></td></tr>`;
+  }).join('');
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Время</th><th>Клиент</th><th>Мастер</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderFullBooks(books){
+  const el=document.getElementById('fbookings');
+  if(!books.length){el.innerHTML='<div class="empty">Записей нет</div>';return;}
+  const now=new Date();
+  const rows=books.map(b=>{
+    const dt=new Date(b.datetime),end=new Date(dt.getTime()+(b.seance_length||1800)*1000);
+    let st,sc;
+    if(b.deleted){st='Отменена';sc='sc2';}
+    else if(dt<=now&&now<=end){st='● сейчас';sc='sn';}
+    else if(dt>now){st='ожидает';sc='sw';}
+    else{st='✓ была';sc='sd';}
+    const price=b.services?.reduce((s,sv)=>s+(sv.cost||0),0)||0;
+    return `<tr><td class="bt">${fmt(b.datetime)}</td><td><div class="bn">${b.client?.name||'Клиент'}</div><div class="bsv">${b.client?.phone||''}</div></td><td class="bsv">${b.services?.map(s=>s.title).join(', ')||'—'}</td><td class="bsv">${b.staff?.name||'—'}</td><td class="bt">${price?inum(price)+'₽':'—'}</td><td><span class="bst ${sc}">${st}</span></td></tr>`;
+  }).join('');
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Время</th><th>Клиент</th><th>Услуга</th><th>Мастер</th><th>Сумма</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// Staff
+async function loadStaff(){
+  try{
+    const data=await apiFetch('/api/staff');
+    const staff=(data.data||[]).filter(s=>!s.fired);
+    document.getElementById('s3').textContent=staff.length;
+    const items=staff.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--or-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--or);">${(s.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div><div style="font-size:12px;font-weight:600;">${s.name}</div><div style="font-size:10px;color:var(--tx2);">${s.specialization||'Барбер'}</div></div>
+      <span class="bst sd" style="margin-left:auto;">● работает</span>
+    </div>`).join('');
+    document.getElementById('staffcont').innerHTML=items||'<div class="empty">Нет данных</div>';
+    addLog('👨‍💼','Аналитик',`Мастеров в команде: ${staff.length}`);
+  }catch(e){document.getElementById('s3').textContent='—';document.getElementById('staffcont').innerHTML='<div class="empty">Не удалось загрузить</div>';}
+}
+
+// Clients
+async function loadClients(){
+  try{
+    const data=await apiFetch('/api/clients?count=25&page=1');
+    const clients=data.data||[];
+    document.getElementById('clbadge').textContent=(data.meta?.total_count||clients.length)+' клиентов';
+    const rows=clients.map(c=>{
+      const ini=(c.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const v=Math.min(c.visits_count||0,10);
+      const bars=Array.from({length:10},(_,i)=>`<div class="vb ${i<v?'f':''}"></div>`).join('');
+      return `<tr><td><span class="cav">${ini}</span><strong>${c.name||'—'}</strong></td><td style="font-size:11px;color:var(--tx2);">${c.phone||'—'}</td><td><div class="vbar">${bars}</div><div style="font-size:9px;color:var(--tx3);margin-top:2px;">${c.visits_count||0} визитов</div></td><td style="font-size:11px;color:var(--tx2);">${c.last_visit_date?fmtD(c.last_visit_date):'—'}</td></tr>`;
+    }).join('');
+    document.getElementById('cllist').innerHTML=`<table class="tbl"><thead><tr><th>Клиент</th><th>Телефон</th><th>Активность</th><th>Последний визит</th></tr></thead><tbody>${rows}</tbody></table>`;
+    addLog('👥','Администратор',`База клиентов: ${data.meta?.total_count||clients.length} чел.`);
+  }catch(e){document.getElementById('cllist').innerHTML='<div class="empty">Не удалось загрузить</div>';}
+}
+
+// Analytics
+async function loadAnalytics(){
+  try{
+    const data=await apiFetch(`/api/analytics?date=${today()}`);
+    const d=data.data||{};
+    const total=d.total_sum||0,svc=d.services_sum||0,goods=d.goods_sum||0,visits=d.visits_count||0;
+    const pct=(v,t)=>t?Math.round(v/t*100):0;
+    document.getElementById('revcont').innerHTML=`
+      <div class="rv-t">${inum(total)} ₽</div>
+      <div class="rv-s">выручка за сегодня · ${visits} визитов</div>
+      <div class="rv-bars">
+        <div class="rv-row"><div class="rv-lbl">Услуги</div><div class="rv-tr"><div class="rv-f" style="width:${pct(svc,total)}%"></div></div><div class="rv-v">${inum(svc)} ₽</div></div>
+        <div class="rv-row"><div class="rv-lbl">Товары</div><div class="rv-tr"><div class="rv-f" style="width:${pct(goods,total)}%"></div></div><div class="rv-v">${inum(goods)} ₽</div></div>
+      </div>`;
+    const ad2=document.getElementById('ag-d2');
+    if(ad2)ad2.innerHTML=`📌 Выручка сегодня: ${inum(total)} ₽<br>📌 Визитов: ${visits}<br>📌 Прогноз на неделю: строится`;
+    addLog('💰','Аналитик',`Выручка за сегодня: ${inum(total)} ₽`);
+  }catch(e){document.getElementById('revcont').innerHTML='<div class="empty">Нет данных аналитики</div>';}
+}
+
+// Reviews
+async function loadReviews(){
+  try{
+    const data=await apiFetch('/api/reviews');
+    const reviews=data.data||[];
+    document.getElementById('rvbadge').textContent=reviews.length+' отзывов';
+    if(!reviews.length){document.getElementById('rvcont').innerHTML='<div class="empty">Отзывов пока нет</div>';return;}
+    document.getElementById('rvcont').innerHTML=reviews.map(r=>`
+      <div class="rvi"><div class="rvh"><div class="rvn">${r.client?.name||'Клиент'}</div><div class="rvs">${'⭐'.repeat(r.rating||5)}</div><div class="rvd">${r.date?fmtD(r.date):''}</div></div>
+      <div class="rvt">${r.text||'Без текста'}</div></div>`).join('');
+    addLog('⭐','Репутация',`Загружено ${reviews.length} отзывов`);
+  }catch(e){document.getElementById('rvcont').innerHTML='<div class="empty">Не удалось загрузить отзывы</div>';}
+}
+
+async function reload(){
+  const btn=document.getElementById('rbtn');
+  btn.disabled=true;btn.textContent='↻ Загрузка...';
+  setStatus('Синхронизация с YClients...',null);
+  await Promise.allSettled([loadBookings(),loadStaff(),loadClients(),loadAnalytics(),loadReviews()]);
+  btn.disabled=false;btn.textContent='↻ Обновить';
+}
+
+// Init
+reload();
+setInterval(loadBookings,60000);
+</script>
+</body>
+</html>

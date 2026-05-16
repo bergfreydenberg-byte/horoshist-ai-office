@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: horoshist-ai-office
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: YCLIENTS_TOKEN
+        value: l24oXa1Mg26Dw6VW63CE
+      - key: SALON_ID
+        value: "124859"
